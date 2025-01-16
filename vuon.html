@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giám Sát và Điều Khiển Vườn Thông Minh</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #00ffe1; /* Màu nền xanh dương cho toàn bộ trang */
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+/* Tiêu đề */
+h1 {
+    background-color: yellow;
+    text-align: center;
+    font-size: 2.5rem;
+    margin-left: 40px;
+    margin-right: 40px;
+    margin-top: 20px;
+    margin-bottom: 45px;
+    color: black;
+    padding: 20px; /* Khoảng cách bên trong khung */
+    border-radius: 20px; /* Bo góc khung nền */
+    text-align: center; /* Căn giữa văn bản */
+}
+#smart-garden {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #333;
+}
+/* Cấu trúc cho các phần node và biểu đồ */
+.grid-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.node, .chart-container {
+    display: inline-block;
+    width: 40%;
+    margin: 50px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.node h2, .chart-container h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.data-display p {
+    margin: 5px 0;
+    font-size: 1.2rem;
+}
+
+canvas {
+    width: 100% !important;
+    height: auto !important;
+}
+
+/* Cấu trúc cho phần điều khiển bơm và hẹn giờ */
+.pump-controls-wrapper {
+    display: flex;
+    justify-content: space-between;  /* Đảm bảo phần tử nằm ngang */
+    gap: 210px; /* Khoảng cách giữa các phần tử */
+    width: 94%; /* Chiếm 90% chiều rộng của container cha */
+    margin: 20px auto;
+}
+
+/* Điều chỉnh chiều rộng của các phần tử điều khiển */
+.pump-control, .pump-scheduler {
+    flex: 1; /* Các phần tử chiếm cùng một không gian */
+    background-color: #f9f9f9;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.pump-control h2, .pump-scheduler h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.pump-control input[type="range"],
+.pump-control input[type="number"],
+.pump-scheduler input[type="range"],
+.pump-scheduler input[type="number"] {
+    width: 80%;
+    margin: 20px 0;
+}
+
+.pump-control button, .pump-scheduler button {
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 1rem;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.pump-control .on-button,
+.pump-scheduler button {
+    background-color: #28a745;
+}
+
+.pump-control .off-button {
+    background-color: #dc3545;
+}
+
+.pump-control .on-button:hover,
+.pump-scheduler button:hover {
+    background-color: #218838;
+}
+
+.pump-control .off-button:hover {
+    background-color: #c82333;
+}
+
+.pump-scheduler button {
+    background-color: #007bff;
+}
+
+.pump-scheduler button:hover {
+    background-color: #0056b3;
+}
+
+.time-inputs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px; /* Khoảng cách giữa các trường */
+}
+
+.time-inputs input[type="number"] {
+    width: 50px; /* Đủ để hiển thị 2 chữ số */
+    padding: 5px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.node {
+    padding: 10px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+#Node1 {
+    background-color: #f8d7da; /* Màu nền cho Node1 */
+}
+
+#Node2 {
+    background-color: #d1e7ff; /* Màu nền cho Node2 */
+}
+
+#Node3 {
+    background-color: #d4edda; /* Màu nền cho Node3 */
+}
+
+#Node4 {
+    background-color: #fff3cd; /* Màu nền cho Node4 */
+}
+h1 {
+    font-size: 40px; /* Tăng kích thước chữ */
+    font-weight: bold; /* In đậm chữ */
+    color: rgba(0, 128, 0, 0.773); /* Màu chữ */
+    padding: 20px; /* Khoảng cách bên trong khung */
+    text-align: center; /* Căn giữa văn bản */
+  }
+#Vuon-info-h2 {
+    font-size: 40px;
+    font-weight: bold; /* In đậm chữ */
+    color: white; /* Màu chữ */
+    text-align: center; /* Căn giữa văn bản */
+}
+.Vuon-info {
+    font-size: 40px;
+    font-weight: bold; /* In đậm chữ */
+    background-color: gray; /* Màu nền */
+    color: black; /* Màu chữ */
+    padding: 20px; /* Khoảng cách bên trong khung */
+    border-radius: 20px; /* Bo góc khung nền */
+    text-align: center; /* Căn giữa văn bản */    
+    margin-left: 40px;
+    margin-right: 40px;
+}
+#Bieu-do-h2 {
+    font-size: 40px;
+    font-weight: bold; /* In đậm chữ */
+    color: white; /* Màu chữ */
+    text-align: center; /* Căn giữa văn bản */
+}
+.Bieu-do{
+    font-size: 40px;
+    font-weight: bold; /* In đậm chữ */
+    background-color: blueviolet; /* Màu nền */
+    color: black; /* Màu chữ */
+    padding: 20px; /* Khoảng cách bên trong khung */
+    border-radius: 20px; /* Bo góc khung nền */
+    text-align: center; /* Căn giữa văn bản */    
+    margin-left: 40px;
+    margin-right: 40px;
+    margin-top: 40px;
+}
+#Dieu-khien {
+    text-align: center;
+    font-size: 40px;
+    color: white;
+}
+.Thiet-bi {
+    font-size: 40px;
+    background-color: rgb(3, 70, 3); /* Màu nền */
+    color: black; /* Màu chữ */
+    padding: 20px; /* Khoảng cách bên trong khung */
+    border-radius: 20px; /* Bo góc khung nền */
+    text-align: center; /* Căn giữa văn bản */    
+    margin-left: 40px;
+    margin-right: 40px;
+    margin-top: 40px;
+    margin-bottom: 50px;
+}
+.pump-scheduler .cancel-button {
+    background-color: #ffc107;  /* Màu vàng cho nút hủy */
+}
+
+.pump-scheduler .cancel-button:hover {
+    background-color: #e0a800;  /* Màu vàng đậm khi hover */
+}
+
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="color: green;">SMART GARDEN DASHBOARD
+            <div id="smart-garden">
+                GIÁM SÁT VÀ ĐIỀU KHIỂN VƯỜN THÔNG MINH
+            </div>
+        </h1>
+        <div class="Vuon-info">
+            <h2 id="Vuon-info-h2">THÔNG TIN VƯỜN</h2>
+            <div id="nodes" class="grid-container">
+                <!-- Node containers sẽ được tạo động qua JavaScript -->
+            </div>
+        </div>
+
+        <div class="Bieu-do">
+            <h2 id="Bieu-do-h2">BIỂU ĐỒ</h2>
+            <div id="charts" class="grid-container">
+                <!-- Biểu đồ sẽ được tạo động qua JavaScript -->
+            </div>            
+        </div>
+
+        <div class="Thiet-bi">
+            <div>
+                <h2 id="Dieu-khien">ĐIỀU KHIỂN THIẾT BỊ</h2>
+            </div>
+            <div class="pump-controls-wrapper">
+                <div class="pump-control">
+                    <h3 style="text-align: center; font-size: 25px;">ĐIỀU KHIỂN BƠM</h3>
+                    <input type="range" id="pump-flow" min="0" max="50" value="0">
+                    <p style="font-size: 25px;">Lưu Lượng: <span id="pump-flow-value">0</span> L/ph</p>
+                    <input type="number" id="pump-duration" style="width: 180px; height: 30px; font-size: 17px;" min="1" max="120" placeholder="Thời gian bơm (phút)" required>
+                    <p style="font-size: 25px;">Thời gian bơm còn: <span id="pump-duration-value">0 phút 0 giây</span></p>
+                    <button class="on-button" id="pump-on">BẬT (ON)</button>
+                    <button class="off-button" id="pump-off">TẮT (OFF)</button>
+                </div>
+            
+                <div class="pump-scheduler">
+                    <h3 style="text-align: center; font-size: 25px;">HẸN GIỜ BƠM</h3>
+                    <input type="range" id="scheduled-flow" min="0" max="50" value="0">
+                    <p style="font-size: 25px;">Lưu Lượng: <span id="scheduled-flow-value">0</span> L/ph</p>
+            
+                    <label for="start-time" style="font-size: 25px;">Thời Gian Bắt Đầu:</label>
+                    <div class="time-inputs">
+                        <input type="number" id="start-hour" min="0" max="23" placeholder="Giờ" required> :
+                        <input type="number" id="start-minute" min="0" max="59" placeholder="Phút" required> :
+                        <input type="number" id="start-second" min="0" max="59" placeholder="Giây" required>
+                    </div>
+                    <input type="number" id="schedule-duration" style="width: 180px; height: 30px; font-size: 17px;" min="1" max="120" placeholder="Thời gian bơm (phút)" required>
+                    <br>
+                    <button class="on-button" id="schedule-pump">ĐẶT HẸN GIỜ</button>
+                    <button class="cancel-button" id="cancel-schedule">HỦY</button>
+                </div>
+            </div>        
+        </div>       
+    </div>
+
+    <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyD_9uOZ1W1MRl4xVFSgJPupC3YupEkRJh8",
+    authDomain: "garden-monitori.firebaseapp.com",
+    databaseURL: "https://garden-monitori-default-rtdb.firebaseio.com",
+    projectId: "garden-monitori",
+    storageBucket: "garden-monitori.firebasestorage.app",
+    messagingSenderId: "193308209488",
+    appId: "1:193308209488:web:c313aa0e229cb4f05ebc55",
+    measurementId: "G-3F500Q9VG1"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
+const nodes = ["Node1", "Node2", "Node3", "Node4"];
+
+function createNodeUI(nodeName) {
+    const container = document.createElement("div");
+    container.className = "node";
+    container.id = nodeName;  // Thiết lập ID riêng cho mỗi node
+    container.innerHTML = `
+        <h2>${nodeName}</h2>
+        <div class="data-display">
+            <p><i class="material-icons" style="color: red">thermostat</i>Nhiệt độ: <span id="temp-${nodeName}">Loading...</span> °C</p>
+            <p><i class="material-icons" style="color: #1E90FF">water_drop</i>Độ ẩm: <span id="humid-${nodeName}">Loading...</span> %</p>
+            <p><i class="material-icons" style="color: brown;">terrain</i>Độ ẩm đất: <span id="somo-${nodeName}">Loading...</span>%</p>
+        </div>
+    `;
+    document.getElementById("nodes").appendChild(container);
+}
+
+function createChartUI(nodeName) {
+    const container = document.createElement("div");
+    container.className = "chart-container";
+    container.innerHTML = `
+        <h3>${nodeName}</h3>
+        <canvas id="chart-${nodeName}"></canvas>
+    `;
+    document.getElementById("charts").appendChild(container);
+}
+
+function updateNodeData(nodeName, data) {
+    document.getElementById(`temp-${nodeName}`).textContent = data.temp || "N/A";
+    document.getElementById(`humid-${nodeName}`).textContent = data.humid || "N/A";
+    document.getElementById(`somo-${nodeName}`).textContent = data.somo || "N/A";
+}
+
+function createChart(nodeName) {
+    const ctx = document.getElementById(`chart-${nodeName}`).getContext("2d");
+    const chartData = {
+        labels: [],
+        datasets: [
+            {
+                label: "Nhiệt độ (°C)",
+                data: [],
+                borderColor: "red",
+                fill: false,
+            },
+            {
+                label: "Độ ẩm (%)",
+                data: [],
+                borderColor: "blue",
+                fill: false,
+            },
+            {
+                label: "Độ ẩm đất (%)",
+                data: [],
+                borderColor: "green",
+                fill: false,
+            },
+        ],
+    };
+
+    const chart = new Chart(ctx, {
+        type: "line",
+        data: chartData,
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            const label = context.dataset.label || "";
+                            const value = context.raw;
+                            const time = new Date(chartData.labels[context.dataIndex]).toLocaleString("vi-VN", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                            });
+                            return `${label}: ${value} (${time})`;
+                        },
+                    },
+                },
+                
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        callback: function (value, index, values) {
+                            const date = new Date(chartData.labels[index]);
+                            return date.toLocaleTimeString("vi-VN", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                            });
+                        },
+                    },
+                },
+            },            
+        },
+    });
+
+    return chart;
+}
+
+// Tạo giao diện cho các node và biểu đồ
+nodes.forEach((node) => {
+    createNodeUI(node);
+    createChartUI(node);
+
+    const chart = createChart(node);
+    const dbRef = ref(database, node);
+
+    onValue(dbRef, (snapshot) => {
+        if (snapshot.exists()) {
+            const nodeData = snapshot.val();
+            const timestamps = Object.keys(nodeData).sort((a, b) => b - a);
+            const latestTimestamps = timestamps.slice(0, 20).reverse();
+
+            const labels = latestTimestamps.map((ts) => new Date(Number(ts) * 1000).toISOString());
+            const tempData = [];
+            const humidData = [];
+            const somoData = [];
+
+            latestTimestamps.forEach((ts) => {
+                const entry = nodeData[ts];
+                tempData.push(entry.temp || 0);
+                humidData.push(entry.humid || 0);
+                somoData.push(entry.somo || 0);
+            });
+
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = tempData;
+            chart.data.datasets[1].data = humidData;
+            chart.data.datasets[2].data = somoData;
+            chart.update();
+
+            const latestData = nodeData[latestTimestamps[latestTimestamps.length - 1]];
+            updateNodeData(node, {
+                temp: latestData.temp || "N/A",
+                humid: latestData.humid || "N/A",
+                somo: latestData.somo || "N/A",
+            });
+        }
+    });
+});
+
+// Điều khiển bơm
+const pumpFlowInput = document.getElementById("pump-flow");
+const pumpFlowValue = document.getElementById("pump-flow-value");
+const pumpDurationInput = document.getElementById("pump-duration");
+const pumpOnButton = document.getElementById("pump-on");
+const pumpOffButton = document.getElementById("pump-off");
+const pumpDurationDisplay = document.getElementById("pump-duration-value");
+
+const cancelScheduleButton = document.getElementById("cancel-schedule");
+
+let scheduledCountdownInterval = null;  // Đảm bảo biến đếm ngược cho việc hẹn giờ là toàn cục
+let scheduledRemainingTime = 0;  // Thời gian còn lại cho việc hẹn giờ
+
+let countdownInterval = null;
+let remainingTime = 0;
+
+pumpFlowInput.addEventListener("input", () => {
+    pumpFlowValue.textContent = pumpFlowInput.value;
+});
+
+pumpOnButton.addEventListener("click", () => {
+    const flowValue = parseInt(pumpFlowInput.value, 10)/50*100;
+    const durationValue = parseInt(pumpDurationInput.value, 10);
+
+    if (durationValue <= 0) {
+        alert("Thời gian bơm không hợp lệ.");
+        return;
+    }
+    if (isNaN(durationValue)) {
+        alert("Chưa nhập thời gian bơm.");
+        return;
+    }
+
+    set(ref(database, "pump"), {
+        flow: flowValue,
+        pump_event: 1,
+    });
+
+
+    // Bắt đầu đếm ngược ngay khi nhấn ON
+    remainingTime = durationValue * 60;  // Chuyển đổi phút thành giây
+    updatePumpDurationDisplay();  // Cập nhật giá trị hiển thị
+
+    // Đặt bộ đếm ngược
+    countdownInterval = setInterval(() => {
+        if (remainingTime > 0) {
+            remainingTime--;
+            updatePumpDurationDisplay();
+        } else {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            set(ref(database, "pump/pump_event"), 0); // Tắt bơm sau khi hết thời gian
+        }
+    }, 1000);  // Chạy bộ đếm ngược mỗi giây
+});
+
+
+pumpOffButton.addEventListener("click", () => {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+    remainingTime = 0;
+    updatePumpDurationDisplay();
+
+    set(ref(database, "pump/pump_event"), 0);
+});
+
+function updatePumpDurationDisplay() {
+    const minutes = Math.floor(remainingTime / 60);
+    const seconds = remainingTime % 60;
+    pumpDurationDisplay.textContent = `${minutes} phút ${seconds} giây`;
+}
+
+
+const scheduledFlowInput = document.getElementById("scheduled-flow");
+const scheduledFlowValue = document.getElementById("scheduled-flow-value");
+const startHourInput = document.getElementById("start-hour");
+const startMinuteInput = document.getElementById("start-minute");
+const startSecondInput = document.getElementById("start-second");
+const scheduleDurationInput = document.getElementById("schedule-duration");
+const schedulePumpButton = document.getElementById("schedule-pump");
+
+scheduledFlowInput.addEventListener("input", () => {
+    scheduledFlowValue.textContent = scheduledFlowInput.value;
+});
+
+schedulePumpButton.addEventListener("click", () => {
+    const flowValue = parseInt(scheduledFlowInput.value, 10) / 50 * 100;
+    const durationValue = parseInt(scheduleDurationInput.value, 10);
+    const startHour = parseInt(startHourInput.value, 10);
+    const startMinute = parseInt(startMinuteInput.value, 10);
+    const startSecond = parseInt(startSecondInput.value, 10);
+
+    // Kiểm tra giá trị nhập vào
+    if (isNaN(durationValue) || durationValue <= 0) {
+        alert("Thời gian bơm không hợp lệ.");
+        return;
+    }
+    if (isNaN(startHour) || isNaN(startMinute) || isNaN(startSecond)) {
+        alert("Thời gian bắt đầu không hợp lệ.");
+        return;
+    }
+
+    const now = new Date();
+    const startTime = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        startHour,
+        startMinute,
+        startSecond
+    );
+
+    // Kiểm tra thời gian bắt đầu phải sau thời gian hiện tại
+    if (startTime <= now) {
+        alert("Thời gian bắt đầu phải lớn hơn thời gian hiện tại.");
+        return;
+    }
+
+    const delay = startTime - now;  // Tính thời gian chờ đến khi bật bơm
+
+    // Đặt hẹn giờ để bật bơm khi đến giờ
+    setTimeout(() => {
+        set(ref(database, "pump"), {
+            flow: flowValue,
+            pump_event: 1,  // Bật bơm khi đến giờ
+        });
+
+        // Tính thời gian bơm sẽ chạy, đổi phút thành giây
+        const durationInSeconds = durationValue * 60;
+
+        // Sau khi bật bơm, hẹn giờ tắt bơm sau durationInSeconds giây
+        setTimeout(() => {
+            set(ref(database, "pump/pump_event"), 0);  // Tắt bơm sau thời gian durationValue phút
+        }, durationInSeconds * 1000);  // durationInSeconds * 1000 để chuyển từ giây sang mili giây
+
+    }, delay);  // Delay để bật bơm vào thời gian startTime
+
+    alert(`Hẹn giờ bơm thành công! Bơm sẽ bắt đầu vào ${startHour}:${startMinute}:${startSecond} và tắt sau ${durationValue} phút.`);
+});
+
+
+
+cancelScheduleButton.addEventListener("click", () => {
+    // Hủy bỏ bộ đếm ngược nếu nó đang chạy
+    if (scheduledCountdownInterval) {
+        clearInterval(scheduledCountdownInterval);
+        scheduledCountdownInterval = null;
+    }
+
+    // Cập nhật Firebase để tắt bơm
+    set(ref(database, "pump/pump_event"), 0);
+
+    // Cập nhật giao diện người dùng, có thể thay đổi thời gian còn lại thành 0 hoặc không hiển thị
+    alert("Hủy hẹn giờ bơm thành công!");
+
+    // Bạn có thể thêm logic để reset các trường nhập liệu nếu cần
+    // Ví dụ: Đặt lại các trường thời gian nhập liệu về mặc định
+    startHourInput.value = '';
+    startMinuteInput.value = '';
+    startSecondInput.value = '';
+    scheduleDurationInput.value = '';
+});
+
+    </script>
+</body>
+</html>
